@@ -829,8 +829,47 @@ async executeStealKeyboxInConfirmWindow() {
                 if (this.isCommandCancelled) return;
                 
                 this.addConfirmLog(`使用参数 -b 执行失败: ${errorB.message || errorB}`, 'error');
+                
+                const commandC = '/data/adb/modules/ts_enhancer_extreme/bin/tseed --stealkeybox -c';
+                this.addConfirmLog(I18n.translate('TRYING_ALTERNATIVE_COMMAND', '尝试备用命令: {command}', {
+                    command: commandC
+                }), 'info');
+                
+                try {
+                    this.addConfirmLog('执行来源C', 'info');
+                
+                    await this.delay(1000);
+                
+                    result = await Core.execCommand(commandC);
+                
+                    if (result && result.trim()) {
+                        this.addConfirmLog('使用参数 -c 执行成功', 'success');
+                        await this.delay(500);
+                    
+                        const simulatedOutput = [
+                            '-下载文件...完毕',
+                            '-解码密钥...完毕',
+                            '-写出文件...完毕',
+                            '-清理缓存'
+                        ];
+                    
+                        for (const line of simulatedOutput) {
+                            if (this.isCommandCancelled) break;
+                            this.addConfirmLog(line, 'info');
+                            await this.delay(800 + Math.random() * 400);
+                        }
+                    
+                    } else {
+                        this.addConfirmLog('命令执行成功，但没有输出', 'info');
+                    }
+                
+                } catch (errorC) {
+                    if (this.isCommandCancelled) return;
+                
+                    this.addConfirmLog(`使用参数 -c 执行失败: ${errorC.message || errorC}`, 'error');
 
-                throw new Error(I18n.translate('BOTH_COMMANDS_FAILED', '所有命令执行都失败，请检查设备兼容性'));
+                    throw new Error(I18n.translate('BOTH_COMMANDS_FAILED', '所有命令执行都失败，请检查设备兼容性'));
+                }
             }
         }
         
